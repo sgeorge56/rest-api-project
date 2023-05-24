@@ -1,6 +1,6 @@
 import os
 from flask import Flask, request, jsonify
-
+from dotenv import load_dotenv
 from flask_smorest import abort, Api
 import uuid
 from resources.store import blp as StoreBlueprint
@@ -15,7 +15,7 @@ from flask_migrate import Migrate
 
 def create_app(db_url = None):
     app = Flask(__name__)
-
+    load_dotenv()
     app.config["PROPAGATE_EXCEPTIONS"] = True
     app.config["API_TITLE"] = "Stores REST API"
     app.config["API_VERSION"] = "v1"
