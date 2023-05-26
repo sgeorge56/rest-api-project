@@ -18,21 +18,19 @@ import requests
 
 blp = Blueprint("Users", "users", description="operations on users")
 
-
+def send_simple_message(to, subject, body):
+    domain = os.getenv("MAILGUN_DOMAIN")
+    return requests.post(
+		f"https://api.mailgun.net/v3/{domain}/messages",
+		auth=("api", os.getenv("MAILGUN_API_KEY")),
+		data={"from": f"Excited User <mailgun@{domain}>",
+			"to": [to],
+			"subject": subject,
+			"text": body}, verify= False)
 
 @blp.route("/register")
 class UserRegister(MethodView):
-    def send_simple_message(to, subject, body):
-        domain = os.getenv("MAILGUN_DOMAIN")
-        return requests.post(
-            f"https://api.mailgun.net/v3/{domain}/messages",
-            auth=("api", os.getenv("MAILGUN_API_KEY")),
-            data={"from": f"Excited User <mailgun@{domain}>",
-                  "to": [to],
-                  "subject": subject,
-                  "text": body})
     @blp.arguments(UserRegisterSchema)
-
     def post(self, user_data):
         if UserModel.query.filter(
                 or_(UserModel.username == user_data["username"],
@@ -46,7 +44,7 @@ class UserRegister(MethodView):
         db.session.add(user)
         db.session.commit()
 
-        UserRegister.send_simple_message(
+        send_simple_message(
             to = user.email,
             subject= "Successfully signed up",
             body= f"Hi {user.username}! You have succesfully signed up to the Stores Rest API"
